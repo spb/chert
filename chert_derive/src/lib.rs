@@ -38,8 +38,6 @@ pub fn derive(input: TokenStream) -> TokenStream {
         panic!("must be a struct with named fields");
     };
 
-    let module_name = Ident::new(&format!("{}_chert_accessors", struct_name), struct_name.span());
-
     let mut fields = Vec::new();
     let mut accessor_functions = Vec::new();
 
@@ -60,20 +58,20 @@ pub fn derive(input: TokenStream) -> TokenStream {
         }
 
         let accessor_name = Ident::new(
-            &format!("get_{}", field_name.to_string().to_ascii_lowercase()),
+            &format!("chert_get_{}", field_name.to_string().to_ascii_lowercase()),
             field_name.span(),
         );
 
         let ident_str = field_name.to_string();
 
         fields.push(quote! {
-            (#ident_str, <#field_type as chert::ChertFieldType>::from_field(#module_name::#accessor_name))
+            (#ident_str, <#field_type as chert::ChertFieldType>::from_field(Self::#accessor_name))
         });
 
         if use_as_ref {
             accessor_functions.push(quote! {
                 #[allow(non_snake_case)]
-                pub(super) fn #accessor_name(object: &#struct_name) -> &<#field_type as chert::ChertFieldType>::AccessedAs {
+                fn #accessor_name(object: &#struct_name) -> &<#field_type as chert::ChertFieldType>::AccessedAs {
                     use std::convert::AsRef;
                     object.#field_name.as_ref()
                 }
@@ -82,7 +80,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
         } else {
             accessor_functions.push(quote! {
                 #[allow(non_snake_case)]
-                pub(super) fn #accessor_name(object: &#struct_name) -> &<#field_type as chert::ChertFieldType>::AccessedAs {
+                fn #accessor_name(object: &#struct_name) -> &<#field_type as chert::ChertFieldType>::AccessedAs {
                     &object.#field_name
                 }
             });
@@ -90,11 +88,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
     }
 
     quote! {
-        #[allow(non_snake_case)]
-        mod #module_name {
-            // Blanket import needed so that type names can be resolved the same way
-            // they are in the original struct definition
-            use super::*;
+        impl #struct_name {
             #(#accessor_functions)*
         }
 
