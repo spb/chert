@@ -405,7 +405,7 @@ impl<T, H: Hash> Engine<T, H> {
                 ChertField::Cidr(field) => dynamics.cidr[*index] = *(*field)(variables),
                 ChertField::Int64(field) => dynamics.int64[*index] = *(*field)(variables),
                 ChertField::Ip(field) => dynamics.ip[*index] = *(*field)(variables),
-                ChertField::String(field) => dynamics.string[*index] = (*field)(variables).clone(),
+                ChertField::String(field) => dynamics.string[*index] = (*field)(variables).to_owned(),
                 ChertField::Uint64(field) => dynamics.uint64[*index] = *(*field)(variables),
             };
         }

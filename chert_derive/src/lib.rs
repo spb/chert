@@ -37,7 +37,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
 
         accessor_functions.push(quote! {
             #[allow(non_snake_case)]
-            pub(super) fn #accessor_name(object: &#ident) -> &#t {
+            pub(super) fn #accessor_name(object: &#ident) -> &<#t as chert::ChertFieldType>::AccessedAs {
                 &object.#i
             }
         });
